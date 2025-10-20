@@ -28,6 +28,8 @@ export default function Index() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editedTeam, setEditedTeam] = useState<Team | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAdding, setIsAdding] = useState(false);
+  const [newTeamName, setNewTeamName] = useState('');
   const { toast } = useToast();
 
   const fetchTeams = async () => {
@@ -90,6 +92,45 @@ export default function Index() {
     setEditedTeam(null);
   };
 
+  const handleAddTeam = async () => {
+    if (!newTeamName.trim()) {
+      toast({
+        variant: 'destructive',
+        title: 'Ошибка',
+        description: 'Введите название команды',
+      });
+      return;
+    }
+
+    try {
+      const newPosition = teams.length + 1;
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newTeamName,
+          position: newPosition,
+        }),
+      });
+
+      if (response.ok) {
+        toast({
+          title: '✅ Команда добавлена',
+          description: `${newTeamName} в таблице!`,
+        });
+        setNewTeamName('');
+        setIsAdding(false);
+        await fetchTeams();
+      }
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Ошибка добавления',
+        description: 'Попробуйте еще раз',
+      });
+    }
+  };
+
   const updateField = (field: keyof Team, value: string | number) => {
     if (!editedTeam) return;
     const numValue = typeof value === 'string' ? parseInt(value) || 0 : value;
@@ -117,15 +158,54 @@ export default function Index() {
       <div className="max-w-7xl mx-auto">
         <Card className="shadow-2xl border-0 overflow-hidden">
           <CardHeader className="bg-gradient-to-r from-secondary to-secondary/90 text-white p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="text-4xl">⚽</div>
-                <CardTitle className="text-3xl md:text-4xl font-bold">Турнирная таблица</CardTitle>
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="text-4xl">⚽</div>
+                  <CardTitle className="text-3xl md:text-4xl font-bold">Турнирная таблица</CardTitle>
+                </div>
+                <div className="flex items-center gap-2 bg-white/20 px-4 py-2 rounded-lg backdrop-blur-sm">
+                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                  <span className="text-sm font-medium">Live</span>
+                </div>
               </div>
-              <div className="flex items-center gap-2 bg-white/20 px-4 py-2 rounded-lg backdrop-blur-sm">
-                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                <span className="text-sm font-medium">Live</span>
-              </div>
+              
+              {isAdding ? (
+                <div className="flex gap-2 items-center bg-white/10 p-4 rounded-lg backdrop-blur-sm transition-all animate-in">
+                  <Input
+                    value={newTeamName}
+                    onChange={(e) => setNewTeamName(e.target.value)}
+                    placeholder="Название новой команды"
+                    className="bg-white text-gray-900 border-0 flex-1"
+                    onKeyDown={(e) => e.key === 'Enter' && handleAddTeam()}
+                    autoFocus
+                  />
+                  <Button
+                    onClick={handleAddTeam}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    <Icon name="Check" size={18} />
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setIsAdding(false);
+                      setNewTeamName('');
+                    }}
+                    variant="outline"
+                    className="bg-white/20 hover:bg-white/30 border-white/30"
+                  >
+                    <Icon name="X" size={18} />
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  onClick={() => setIsAdding(true)}
+                  className="bg-white/10 hover:bg-white/20 border border-white/30 w-full md:w-auto"
+                >
+                  <Icon name="Plus" size={18} />
+                  <span className="ml-2">Добавить команду</span>
+                </Button>
+              )}
             </div>
           </CardHeader>
           
