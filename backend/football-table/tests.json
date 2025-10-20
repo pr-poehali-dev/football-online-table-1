@@ -1,0 +1,29 @@
+{
+  "tests": [
+    {
+      "name": "Get all teams",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Update team",
+      "method": "PUT",
+      "path": "/",
+      "body": {
+        "id": 1,
+        "name": "Манчестер Сити",
+        "played": 11,
+        "won": 9,
+        "drawn": 1,
+        "lost": 1,
+        "goals_for": 30,
+        "goals_against": 10,
+        "goal_difference": 20,
+        "points": 28,
+        "position": 1
+      },
+      "expectedStatus": 200
+    }
+  ]
+}
