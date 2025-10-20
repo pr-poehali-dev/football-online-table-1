@@ -131,6 +131,32 @@ export default function Index() {
     }
   };
 
+  const handleDelete = async (teamId: number, teamName: string) => {
+    if (!confirm(`Удалить команду "${teamName}"?`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}?id=${teamId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        toast({
+          title: '🗑️ Команда удалена',
+          description: `${teamName} больше нет в таблице`,
+        });
+        await fetchTeams();
+      }
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Ошибка удаления',
+        description: 'Попробуйте еще раз',
+      });
+    }
+  };
+
   const updateField = (field: keyof Team, value: string | number) => {
     if (!editedTeam) return;
     const numValue = typeof value === 'string' ? parseInt(value) || 0 : value;
@@ -361,14 +387,24 @@ export default function Index() {
                               </Button>
                             </div>
                           ) : (
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => handleEdit(team)}
-                              className="hover:bg-accent/20 transition-all"
-                            >
-                              <Icon name="Edit" size={16} />
-                            </Button>
+                            <div className="flex gap-1 justify-center">
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleEdit(team)}
+                                className="hover:bg-accent/20 transition-all"
+                              >
+                                <Icon name="Edit" size={16} />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleDelete(team.id, team.name)}
+                                className="hover:bg-red-100 text-red-600 transition-all"
+                              >
+                                <Icon name="Trash2" size={16} />
+                              </Button>
+                            </div>
                           )}
                         </TableCell>
                       </TableRow>
